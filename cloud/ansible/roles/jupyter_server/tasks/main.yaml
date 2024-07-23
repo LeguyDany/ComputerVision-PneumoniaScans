@@ -1,0 +1,168 @@
+- name: Install sudo
+  apt:
+    name: sudo
+    state: present
+
+- name: Upgrade APT packages
+  apt:
+    update_cache: yes
+    upgrade: yes
+  tags:
+    - upgrade
+
+- name: Install sudo, unzip, curl, vim and git
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - unzip
+    - curl
+    - wget
+    - git
+    - vim
+    - tree
+    # - iptables
+    # - iptables-persistent
+
+- name: Add sudoers
+  user:
+    name: "{{ sudoer_name }}"
+    groups: sudo
+    append: yes
+
+- name: Install prerequisites
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - software-properties-common
+    - python3-pip
+    - python3-dev
+    - build-essential
+    - libssl-dev
+    - libffi-dev
+    - python3-setuptools
+
+- name: Install Python
+  apt:
+    name: python3.11
+    state: present
+    update_cache: yes
+
+- name: Download Miniconda installer
+  get_url:
+    url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    dest: /tmp/Miniconda3-latest-Linux-x86_64.sh
+    mode: "0755"
+
+- name: Install Miniconda
+  shell: "/tmp/Miniconda3-latest-Linux-x86_64.sh -b -p {{ setup_path }}/miniconda"
+
+- name: Add Miniconda to PATH in .bashrc
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: "export PATH={{ setup_path }}/miniconda/bin:$PATH"
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ setup_path }}/miniconda/bin"
+
+- name: Clear cache
+  shell: "sync; echo 1 > /proc/sys/vm/drop_caches"
+  args:
+    executable: /bin/bash
+
+- name: Install cuda for pyTorch
+  shell: "{{ setup_path }}/miniconda/bin/conda install -y pytorch-cuda=11.7 -c pytorch -c nvidia"
+  args:
+    chdir: "{{ setup_path }}"
+
+- name: Install cuda
+  shell: "{{ setup_path }}/miniconda/bin/conda install -y -c 'nvidia/label/cuda-11.7.0' cuda-toolkit"
+  args:
+    chdir: "{{ setup_path }}"
+
+- name: Create a virtual environment
+  command: "{{ setup_path }}/miniconda/bin/conda create -y -n jupyter python=3.11"
+  args:
+    chdir: "{{ setup_path }}"
+
+- name: Setup the virtual environment
+  command: "{{ setup_path}}/miniconda/bin/conda run -n jupyter jupyter notebook --generate-config"
+  args:
+    chdir: "{{ setup_path }}"
+
+- name: Disable password authentification for the jupyter server
+  command: "echo 'c.NotebookApp.token = ''' >> {{ setup_path }}/.jupyter/jupyter_notebook_config.py"
+
+- name: Install notebook and jupyter
+  command: "{{ setup_path }}/miniconda/bin/conda run -n jupyter pip install jupyter notebook"
+  args:
+    chdir: "{{ setup_path }}"
+
+- name: Clear cache
+  shell: "sync; echo 1 > /proc/sys/vm/drop_caches"
+  args:
+    executable: /bin/bash
+
+- name: Creates a requirements.txt file
+  ansible.builtin.template:
+    src: ../template/requirements.j2
+    dest: "{{ setup_path }}/requirements.txt"
+
+- name: Install all jupyter dependencies
+  command: "/home/dany_leguy/miniconda/bin/conda run -n jupyter pip install -r {{ setup_path }}/requirements.txt"
+  args:
+    chdir: "{{ setup_path }}"
+- name: Clear cache
+  shell: "sync; echo 1 > /proc/sys/vm/drop_caches"
+  args:
+    executable: /bin/bash
+
+- name: Create a .sh file start a jupyter server
+  ansible.builtin.template:
+    src: ../template/jupyter_server_start.j2
+    dest: "{{setup_path}}/jupyter_server_start.sh"
+    mode: "0755"
+
+- name: Add Debian Nvidia packages source
+  lineinfile:
+    path: /etc/apt/sources.list
+    line: deb http://deb.debian.org/debian/ bookworm main contrib non-free non-free-firmware
+    state: present
+
+- name: Update APT packages
+  apt:
+    update_cache: yes
+    upgrade: yes
+
+- name: reboot the server
+  command: reboot
+  async: 0
+  poll: 0
+# - name: Allow incoming connections on port 8888
+#   ansible.builtin.command: iptables -A INPUT -p tcp --dport 8888 -j ACCEPT
+
+# - name: Save iptables rules
+#   ansible.builtin.command: service netfilter-persistent save
+
+# ==============================================================================
+
+# - name: Install venv
+#   apt:
+#     name: python3.11-venv
+#     state: present
+
+# - name: Create a virtual environment and install notebook
+#   block:
+#     - name: Create a virtual environment
+#       command: "python3 -m venv {{venv_path}}"
+
+# - name: Install notebook and jupyter
+#   command: "{{venv_path}}bin/pip install jupyter notebook"
+
+# - name: Install all jupyter dependencies
+#   command: |
+#     {{venv_path}}bin/pip install -r {{setup_path}}/requirements.txt
+
+# - name: Set ansible_python_interpreter to use venv python
+#   set_fact:
+#     ansible_python_interpreter: "{{ venv_path }}/bin/python"

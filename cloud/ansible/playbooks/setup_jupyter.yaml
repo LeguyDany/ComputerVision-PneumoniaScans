@@ -1,0 +1,13 @@
+# Setup Jupyter Notebook on a server
+- name: Jupyter Notebook setup
+  hosts: jupyter_server
+  become: yes
+  vars:
+    sudoer_name: "{{ user }}"
+    ansible_python_interpreter: /usr/bin/python3
+    # venv_path: "/mnt/mydisk/venv/"
+    setup_path: "/home/{{ user }}/"
+  vars_files:
+    - ../secret.yaml
+  roles:
+    - ../roles/jupyter_server

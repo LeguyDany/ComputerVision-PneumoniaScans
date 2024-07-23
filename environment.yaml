@@ -1,0 +1,30 @@
+name: jupyter
+channels:
+  - defaults
+dependencies:
+  - pandas
+  - numpy
+  - plotly
+  - matplotlib
+  - seaborn
+  - Pillow
+  - azure-storage-blob
+  - scikit-learn
+  - pip
+  - pip:
+      - opencv-python
+      - opencv-python-headless
+      - opencv-contrib-python
+      - torch
+      - torchvision
+      - torchaudio
+      - jupyterlab-lsp
+      - python-lsp-server
+      - jupyter
+      - notebook
+      - python-dotenv
+      - chardet
+      - tqdm
+      - torchserve
+      - sagemaker
+      - boto3

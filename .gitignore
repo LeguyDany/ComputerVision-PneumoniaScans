@@ -1,0 +1,23 @@
+.env
+./ansible/secret.yaml
+.DS_Store
+__pycache__
+
+myenv/
+dataset/
+
+*.gz
+*.pth
+
+gcp_api_key.json
+condaenv.*.txt
+
+#Jupyter notebooks
+.ipynb_checkpoints/
+.virtual_documents/
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl

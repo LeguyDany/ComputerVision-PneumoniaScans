@@ -1,0 +1,8 @@
+# Setup nvidia and its drivers on a server
+- name: Nvidia setup
+  hosts: jupyter_server
+  become: yes
+  vars_files:
+    - ../secret.yaml
+  roles:
+    - ../roles/nvidia

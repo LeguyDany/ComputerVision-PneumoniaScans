@@ -1,0 +1,22 @@
+- name: Get the current kernel version
+  command: uname -r
+  register: kernel_version
+
+# Source: https://www.reddit.com/r/linux4noobs/comments/18n34c3/nvidia_drivers_for_debian_12_step_by_step/
+- name: Install nvidia driver
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    # - nvidia-detect # You need to do nvidia-detect to get the right driver
+    - linux-headers-{{ kernel_version.stdout }}
+    - nvidia-driver
+    - firmware-misc-nonfree
+    # - nvidia-tesla-470-driver # You need to do nvidia-detect to get the right driver
+    - nvidia-cuda-dev
+    - nvidia-cuda-toolkit
+
+- name: reboot the server
+  command: reboot
+  async: 0
+  poll: 0
