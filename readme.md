@@ -1,5 +1,5 @@
 
-# ComputerVision-TuberculosisScans
+# ComputerVision-PneumoniaScans
 
 This is a project about machine learning, more precisely image recognition. The goal is to create or use several models, finetune and classify medical images. The main topic is pneumonia, and the images are lung scannings.
 
