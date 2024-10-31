@@ -46,9 +46,9 @@ conda activate
 conda install -y pytorch-cuda=11.7 -c pytorch -c nvidia
 conda install -y -c 'nvidia/label/cuda-11.7.0' cuda-toolkit
 ```
-# How do use
+# How to use
 
-You can train different models within the project or do some exploration with notebooks.
+You can train different models within the project or do some exploration with jupyter notebooks.
 
 
 ## Exploration
